@@ -1,0 +1,7 @@
+# Ensure cron scripts keep LF endings
+cron/2fa-cron text eol=lf
+scripts/*.sh text eol=lf
+
+# Ensure all other text files use LF
+*.py text eol=lf
+*.sh text eol=lf
