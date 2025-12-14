@@ -1,28 +1,33 @@
 #!/usr/bin/env python3
 
-import sys
-import os
+import base64
 from datetime import datetime, timezone
-
-# ✅ Add app folder to Python path
-sys.path.append("/app/app")
-
-from scripts.totp_utils import generate_totp_code
-
-
-SEED_PATH = "/data/seed.txt"
+import pyotp
 
 def main():
-    if not os.path.exists(SEED_PATH):
-        print("Seed not found")
-        return
+    seed_path = "/data/seed.txt"
 
-    with open(SEED_PATH, "r") as f:
-        hex_seed = f.read().strip()
+    try:
+        # 1. Read hex seed
+        with open(seed_path, "r") as f:
+            hex_seed = f.read().strip()
 
-    code = generate_totp_code(hex_seed)
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-    print(f"{now} - 2FA Code: {code}")
+        # 2. Convert hex -> base32 (CORRECT WAY)
+        seed_bytes = bytes.fromhex(hex_seed)
+        base32_seed = base64.b32encode(seed_bytes).decode()
 
-if __name__ == "_main_":
+        # 3. Generate TOTP (SHA1, 30s, 6 digits default)
+        totp = pyotp.TOTP(base32_seed)
+        code = totp.now()
+
+        # 4. UTC timestamp
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+        # 5. Output
+        print(f"{timestamp} - 2FA Code: {code}")
+
+    except Exception as e:
+        print("ERROR:", e)
+
+if __name__ == "__main__":
     main()
