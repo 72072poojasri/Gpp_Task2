@@ -1,29 +1,33 @@
-# Use Python base image
 FROM python:3.11-slim
 
-# Set working directory inside container
+# ---- Environment ----
+ENV TZ=UTC
 WORKDIR /app
 
-# Copy application files
-COPY app.py /app/
-COPY scripts /app/scripts/
-COPY cron /app/cron/
-COPY requirements.txt /app/
+# ---- System deps ----
+RUN apt-get update && \
+    apt-get install -y cron tzdata && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
+# ---- Python deps ----
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install cron (Linux) and dos2unix to fix line endings
-RUN apt-get update && apt-get install -y cron dos2unix
-
-# Ensure cron file has LF line endings
-RUN dos2unix /app/cron/2fa-cron
-
-# Copy entrypoint script
+# ---- App code ----
+COPY app.py /app/app.py
+COPY scripts /app/scripts
+COPY cron/2fa-cron /etc/cron.d/2fa-cron
 COPY start.sh /start.sh
-RUN chmod +x /start.sh
 
+# ---- Cron setup ----
+RUN chmod 0644 /etc/cron.d/2fa-cron && \
+    crontab /etc/cron.d/2fa-cron && \
+    chmod +x /start.sh && \
+    mkdir -p /data /cron && \
+    chmod 755 /data /cron
 
-# Start cron in foreground
+# ---- Expose API ----
+EXPOSE 8080
+
+# ---- Start ----
 CMD ["/start.sh"]
-
