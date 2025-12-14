@@ -1,37 +1,15 @@
-version: "3.9"
-
 services:
   app:
-    # Build configuration
-    build:
-      context: .               # Set build context to current directory
-      dockerfile: Dockerfile   # Specify Dockerfile path
-
-    # Container name (optional)
+    build: .
     container_name: my-app
-
-    # Port mapping
     ports:
-      - "8080:8080"            # Map 8080:8080
-
-    # Volume mounts
+      - "8080:8080"
     volumes:
-      - seed-data:/data        # seed-data -> /data
-      - cron-output:/cron      # cron-output -> /cron
-
-      # Key files for local development
-      - ./keys/student_private.pem:/app/student_private.pem:ro
-      - ./keys/student_public.pem:/app/student_public.pem:ro
-      - ./keys/instructor_public.pem:/app/instructor_public.pem:ro
-
-    # Environment variables
+      - seed-data:/data
+      - cron-output:/cron
     environment:
       - TZ=UTC
 
-    # Restart policy
-    restart: unless-stopped
-
-# Named volumes
 volumes:
   seed-data:
   cron-output:
