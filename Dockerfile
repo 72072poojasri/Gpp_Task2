@@ -20,10 +20,10 @@ RUN apt-get update && apt-get install -y cron dos2unix
 RUN dos2unix /app/cron/2fa-cron
 
 # Copy entrypoint script
-COPY scripts/start-cron.sh /app/start-cron.sh
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
-# Make it executable inside container
-RUN ["chmod", "+x", "/app/start-cron.sh"]
 
 # Start cron in foreground
-CMD ["/app/start-cron.sh"]
+CMD ["/start.sh"]
+
