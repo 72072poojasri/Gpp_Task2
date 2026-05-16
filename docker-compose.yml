@@ -2,13 +2,18 @@ services:
   app:
     build: .
     container_name: my-app
+
     ports:
       - "8080:8080"
+
     volumes:
       - seed-data:/data
       - cron-output:/cron
+
     environment:
       - TZ=UTC
+
+    restart: unless-stopped
 
 volumes:
   seed-data:
